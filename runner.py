@@ -1,4 +1,6 @@
 """
+Edited Daniel Brown 
+
 Author: Eren Sezener (erensezener@gmail.com)
 Date: April 4, 2014
 
@@ -17,17 +19,17 @@ from functools import partial
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.gridspec as gridspec
-from modified_birl import *
+from birl import *
 
 
 def main():
-    number_of_iterations = 10
+    number_of_iterations = 1
 
-    # expert_mdp = GridMDP([[-10, -5, 0, 0, 10],
-    #         [-5, -3, 0, 0, 0],
-    #         [0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 0]],
-    #         terminals=[(4,3)])
+    expert_mdp = GridMDP([[-10, -5, 0, 0, 10],
+                           [-5, -3, 0, -3, 0],
+                           [0, -3, 0, -3, 0],
+                           [0, 0, 0, 0, 0]],
+                           terminals=[(4,3)])
 
     # expert_mdp = GridMDP([[-10, -5, -3, -1, 0, 0, 0, 0, 0, 10],
     #         [-8, -5, -3, 0, 0, 0, 0, 0, 0, 0],
@@ -50,11 +52,11 @@ def main():
     #            [0, 0, 0, 0, 0, -1, -1, 0, 0, 0]]
     #
 
-    rewards = [[0, 0, 0, 0, -8, -8, 0, 0, 0, 10],
-               [0, 0, 0, -8, -10, -10, -8, 0, 0, 0],
-               [0, 0, 0, -8, -10, -10, -8, 0, 0, 0],
-               [0, 0, 0, -8, -10, -10, -8, 0, 0, 0],
-               [0, 0, 0, 0, 0, -8, -8, 0, 0, 0]]
+    #rewards = [[0, 0, 0, 0, -8, -8, 0, 0, 0, 10],
+    #           [0, 0, 0, -8, -10, -10, -8, 0, 0, 0],
+    #           [0, 0, 0, -8, -10, -10, -8, 0, 0, 0],
+    #           [0, 0, 0, -8, -10, -10, -8, 0, 0, 0],
+    #           [0, 0, 0, 0, 0, -8, -8, 0, 0, 0]]
 
     # rewards = [[-6, -3, -1, 0, 0, 0, 0, 0, 0, 10],
     #             [-3, -3, -1, 0, 0, 0, 0, 0, 0, 0],
@@ -75,8 +77,8 @@ def main():
 
 
 
-    expert_mdp = GridMDP(rewards,
-                         terminals=[(9, 4)])
+    #expert_mdp = GridMDP(rewards,
+    #                     terminals=[(9, 4)])
 
     expert_trace = best_policy(expert_mdp, value_iteration(expert_mdp, 0.001))
     print "Expert rewards:"
@@ -85,11 +87,12 @@ def main():
     print_table(expert_mdp.to_arrows(expert_trace))
     print "---------------"
 
-    expert_trace.pop((0,1))
-    expert_trace.pop((0,2))
-    expert_trace.pop((0,3))
+    #not sure why they included these. Maybe to add uncertainty??
+    #expert_trace.pop((0,1))
+    #expert_trace.pop((0,2))
+    #expert_trace.pop((0,3))
 
-    birl = ModifiedBIRL(expert_trace, expert_mdp.get_grid_size(), expert_mdp.terminals,
+    birl = BIRL(expert_trace, expert_mdp.get_grid_size(), expert_mdp.terminals,
                 partial(calculate_error_sum, expert_mdp), birl_iteration=2, step_size=1.0)
     run_multiple_birl(birl, expert_mdp, expert_trace, number_of_iterations)
 
@@ -127,6 +130,7 @@ def run_multiple_birl(birl, expert_mdp, expert_trace, number_of_iteration):
 
     for i in range(number_of_iteration):
         pi, mdp, policy_error, reward_error = birl.run_birl()
+        print "reward", mdp.print_rewards()
         plot_errors(policy_error, reward_error, directory_name, birl, i, expert_mdp, mdp)
         print("Run :" + str(i))
         print_reward_comparison(mdp, pi, expert_mdp, expert_trace)

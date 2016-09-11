@@ -52,7 +52,7 @@ class GridMDP(MDP):
     An action is an (x, y) unit vector; e.g. (1, 0) means move east."""
 
 
-    def __init__(self, grid, terminals, init=(0, 0), gamma=.95):
+    def __init__(self, grid, terminals, init=(0, 0), gamma=.9):
         grid.reverse()  ## because we want row 0 on bottom, not on top
         MDP.__init__(self, init, actlist=orientations,
                      terminals=terminals, gamma=gamma)
@@ -63,12 +63,14 @@ class GridMDP(MDP):
                 if grid[y][x] is not None:
                     self.states.add((x, y))
 
-
+    #not sure why this is here...
     def get_grid(self):
         grid = self.grid
+        print grid
         for x in range(self.cols):
             for y in range(self.rows):
                 grid[y][x] = self.reward[x, y]
+                print grid
         grid.reverse()
         return grid
 
@@ -143,7 +145,8 @@ class GridMDP(MDP):
 
 
     def modify_state(self, indices, step):
-        y_to_change, x_to_change = indices
+        #y_to_change, x_to_change = indices #hopefully this was an error!!
+        x_to_change, y_to_change = indices
         direction = randint(0, 1) * 2 - 1
         if self.r_min < self.reward[x_to_change, y_to_change] + direction * step < self.r_max:
             self.reward[x_to_change, y_to_change] += direction * step
@@ -163,6 +166,18 @@ def value_iteration(mdp, epsilon=0.001):
             delta = max(delta, abs(U1[s] - U[s]))
         if delta < epsilon * (1 - gamma) / gamma:
             return U
+
+
+def get_q_values(mdp, U):
+    Q = {}
+    for s in mdp.states:
+        for a in mdp.actions(s):
+            Qtemp = mdp.reward[s]
+            for (p, sp) in mdp.T(s, a):
+                Qtemp += mdp.gamma * p * U[sp]
+            Q[s, a] = Qtemp
+    return Q
+
 
 
 def best_policy(mdp, U):
@@ -196,8 +211,8 @@ def policy_iteration(mdp):
         if unchanged:
             return pi, U
 
-
-def policy_evaluation(pi, U, mdp, k=20):
+#TODO what is a good value for k?
+def policy_evaluation(pi, U, mdp, k=100):
     """Return an updated utility mapping U from each state in the MDP to its 
     utility, using an approximation (modified policy iteration)."""
     R, T, gamma = mdp.R, mdp.T, mdp.gamma

@@ -105,17 +105,9 @@ def calculate_posterior(mdp, q, expert_pi, gamma=0.95):
         if s in expert_pi:
             e += gamma * q[s, expert_pi[s]] - logsumexp(z)
         del z[:]  #Removes contents of Z
-    return e * calculate_prior(mdp.reward.values())
-    # return e
+    return e + calculate_prior(mdp.reward.values())
+    # return P(demo | R) * P(R) in log space
 
-
-def get_q_values(mdp, U):
-    Q = {}
-    for s in mdp.states:
-        for a in mdp.actions(s):
-            for (p, sp) in mdp.T(s, a):
-                Q[s, a] = mdp.reward[s] + mdp.gamma * p * U[sp]
-    return Q
 
 
 def calculate_prior(rewards):
