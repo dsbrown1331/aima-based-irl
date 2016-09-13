@@ -202,6 +202,10 @@ def policy_iteration(mdp):
     pi = dict([(s, choice(mdp.actions(s))) for s in mdp.states])
     while True:
         U = policy_evaluation(pi, U, mdp)
+        #print "policy eval U"
+        #print U
+        #print "policy eval PI"
+        #print pi
         unchanged = True
         for s in mdp.states:
             a = argmax(mdp.actions(s), lambda a: expected_utility(a, s, U, mdp))
@@ -212,11 +216,14 @@ def policy_iteration(mdp):
             return pi, U
 
 #TODO what is a good value for k?
-def policy_evaluation(pi, U, mdp, k=100):
+def policy_evaluation(pi, U, mdp, k=20):
     """Return an updated utility mapping U from each state in the MDP to its 
     utility, using an approximation (modified policy iteration)."""
     R, T, gamma = mdp.R, mdp.T, mdp.gamma
     for i in range(k):
+        #print "k", i
         for s in mdp.states:
-            U[s] = R(s) + gamma * sum([p * U[s] for (p, s1) in T(s, pi[s])])
+            #print "s", s
+            U[s] = R(s) + gamma * sum([p * U[s1] for (p, s1) in T(s, pi[s])])
+            #print "U[s]", U[s]
     return U

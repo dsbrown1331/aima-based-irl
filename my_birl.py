@@ -43,9 +43,12 @@ class BIRL():
             #new_mdp.print_rewards()
             #TODO this isn't exactly like the paper...
             #TODO ask scott about Q, should it be based on pi or pi^*
-            new_u = policy_evaluation(pi, u, new_mdp, 1) #evaluate old policy with old u and update using new R
+            new_u = policy_evaluation(pi, u, new_mdp) #evaluate old policy with old u and update using new R #changed to use default k which i changed to be 100
+            #i wonder if it helps to start with old u? I guess a lot won't change 
             #check if there is a state where new action is better than old policy
             if pi != best_policy(new_mdp, new_u):
+            #also try 
+            #if q != get_q_values(new_mdp, new_u): #I think it is the same...
                 #print 'old policy not optimal under new reward'
                 new_pi, new_u = policy_iteration(new_mdp) #get new policy #TODO i think we could use the best_policy command above to speed things up
                 new_q = get_q_values(new_mdp, new_u) #get new q-vals to calc posterior
@@ -62,7 +65,7 @@ class BIRL():
                     if bestPosterior < new_posterior:
                         bestPosterior = new_posterior
                         bestMDP = new_mdp
-                    new_mdp.print_rewards()
+                    
                     pi, u, mdp, posterior = new_pi, new_u, deepcopy(new_mdp), new_posterior
 
             else:
