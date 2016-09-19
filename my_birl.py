@@ -28,8 +28,8 @@ class BIRL():
         mdp = self.create_zero_rewards() #pick a starting reward vector
         Rchain.append(mdp.reward)
         
-        print 'old rewards'
-        mdp.print_rewards()
+        #print 'old rewards'
+        #mdp.print_rewards()
         pi, u = policy_iteration(mdp) #calculate optimal policy and utility for random R
         q = get_q_values(mdp, u) #get the q-values for R in mdp
         posterior = calculate_posterior(mdp, q, self.expert_trace, self.prior)
@@ -57,10 +57,10 @@ class BIRL():
                 if probability(min(1, exp(new_posterior - posterior))):
                     #TODO figure out why it doesn't switch very often 
                     #TODO I could do much better I think using simulated annealing or randomized hill climbing...just systemtatically try neighboring rewards and climb with some noise...isn't that what mcmc does, though, I don't know if it's all that efficient...maybe a better prior is needed
-                    print "===== iter", i, "======" 
-                    print 'switched better'
-                    print 'new rewards'
-                    new_mdp.print_rewards()
+                    #print "===== iter", i, "======" 
+                    #print 'switched better'
+                    #print 'new rewards'
+                    #new_mdp.print_rewards()
                     #try saving the best so far
                     if bestPosterior < new_posterior:
                         bestPosterior = new_posterior
@@ -73,10 +73,10 @@ class BIRL():
                 new_posterior = calculate_posterior(new_mdp, new_q, self.expert_trace, self.prior)
 
                 if probability(min(1, exp(new_posterior - posterior))):
-                    print "===== iter", i, "======" 
-                    print 'switched random'
-                    print 'new rewards'
-                    new_mdp.print_rewards()
+                    #print "===== iter", i, "======" 
+                    #print 'switched random'
+                    #print 'new rewards'
+                    #new_mdp.print_rewards()
                     mdp, posterior = deepcopy(new_mdp), new_posterior
             
             Rchain.append(mdp.reward)
@@ -122,3 +122,24 @@ def print_reward_comparison(mdp, pi, expert_mdp, expert_trace):
     mdp.print_rewards()
     print "vs"
     expert_mdp.print_rewards()
+    
+#compute the average reward over the chain of rewards
+def average_chain(chain, burn):
+    mean_reward = {}
+    count = 1.0
+    #initialize
+    for item in chain[burn]:
+        mean_reward[item] = chain[burn][item]
+
+    #add up all rewards
+    for i in range(burn+1,len(chain)):
+        count += 1.0
+        for item in chain[i]:
+            mean_reward[item] += chain[i][item]
+
+    #calculate average
+    for thing in mean_reward:
+        mean_reward[thing] = mean_reward[thing] / count
+    return mean_reward    
+    
+    

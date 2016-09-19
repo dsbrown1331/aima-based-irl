@@ -52,7 +52,7 @@ class GridMDP(MDP):
     An action is an (x, y) unit vector; e.g. (1, 0) means move east."""
 
 
-    def __init__(self, grid, terminals, init=(0, 0), gamma=.9):
+    def __init__(self, grid, terminals, init=(0, 0), gamma=.95):
         grid.reverse()  ## because we want row 0 on bottom, not on top
         MDP.__init__(self, init, actlist=orientations,
                      terminals=terminals, gamma=gamma)
@@ -143,6 +143,8 @@ class GridMDP(MDP):
         chars = {(1, 0): '>', (0, 1): '^', (-1, 0): '<', (0, -1): 'v', None: '.'}
         return self.to_grid(dict([(s, chars[a]) for (s, a) in policy.items()]))
 
+    def print_arrows(self):
+        print_table(self.to_arrows(best_policy(self, value_iteration(self, 0.001))))
 
     def modify_state(self, indices, step):
         #y_to_change, x_to_change = indices #hopefully this was an error!!
@@ -216,7 +218,7 @@ def policy_iteration(mdp):
             return pi, U
 
 #TODO what is a good value for k?
-def policy_evaluation(pi, U, mdp, k=20):
+def policy_evaluation(pi, U, mdp, k=100):
     """Return an updated utility mapping U from each state in the MDP to its 
     utility, using an approximation (modified policy iteration)."""
     R, T, gamma = mdp.R, mdp.T, mdp.gamma
