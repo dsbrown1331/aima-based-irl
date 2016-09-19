@@ -7,9 +7,10 @@ from mdp import *
 from utils import *
 from copy import deepcopy
 from math import exp
+from my_birl import BIRL
 
-
-class BIRL():
+#takes 
+class BIRL_BATCH(BIRL):
     def __init__(self, expert_trace, grid_size, terminals, init, step_size=1.0, r_min=-10.0,
                  r_max=10.0, prior = 'uniform', birl_iteration = 2000):
         self.n_rows, self.n_columns = grid_size
@@ -95,15 +96,17 @@ class BIRL():
 #TODO what do you do for the terminal state? when actions are None what do you normalize by
 #TODO does the agent even know the terminals? what is the action in the terminal state?
 #TODO anneal the alpha ?
-def calculate_posterior(mdp, q, expert_pi, prior, alpha=0.95,):
+#TODO I think I need to reverse the order of the iteration need to think about it more...
+#overriden method
+def calculate_posterior(mdp, q, expert_demos, prior, alpha=0.95,):
     z = []
     e = 0
     for s in mdp.states:
         for a in mdp.actions(s):
             z.append(alpha * q[s, a]) #normalizing constant in denominator
 
-        if s in expert_pi:
-            e += alpha * q[s, expert_pi[s]] - logsumexp(z) #log(e^Q / sum e^Q)
+        if s in expert_demos:
+            e += alpha * q[s, expert_demos[s]] - logsumexp(z) #log(e^Q / sum e^Q)
 
         del z[:]  #Removes contents of Z
     #TODO get a better prior and maybe use state info, not just raw values??
@@ -112,37 +115,7 @@ def calculate_posterior(mdp, q, expert_pi, prior, alpha=0.95,):
     # return P(demo | R) * P(R) in log space
 
 
-def uniform_prior(_): return 1
-
-#for debugging
-def print_reward_comparison(mdp, pi, expert_mdp, expert_trace):
-    print_table(mdp.to_arrows(pi))
-    print "vs"
-    print_table(mdp.to_arrows(expert_trace))
-    print("Policy difference is " + str(get_policy_difference(pi, expert_trace)))
-    mdp.print_rewards()
-    print "vs"
-    expert_mdp.print_rewards()
-    
-#compute the average reward over the chain of rewards
-def average_chain(chain, burn):
-    mean_reward = {}
-    count = 1.0
-    #initialize
-    for item in chain[burn]:
-        mean_reward[item] = chain[burn][item]
-
-    #add up all rewards
-    for i in range(burn+1,len(chain)):
-        count += 1.0
-        for item in chain[i]:
-            mean_reward[item] += chain[i][item]
-
-    #calculate average
-    for thing in mean_reward:
-        mean_reward[thing] = mean_reward[thing] / count
-    return mean_reward    
     
 #take a bunch of lists of (s,a) tuples merge all into a dictionary
-def merge_trajectories_into_dict(demons):
+def merge_trajectories(demons):
     return

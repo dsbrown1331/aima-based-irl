@@ -144,6 +144,12 @@ class GridMDP(MDP):
         return self.to_grid(dict([(s, chars[a]) for (s, a) in policy.items()]))
 
     def print_arrows(self):
+        print "self"
+        print self
+        print "value"
+        print value_iteration(self, 0.001)
+        print "best policy"
+        print best_policy(self, value_iteration(self, 0.001))
         print_table(self.to_arrows(best_policy(self, value_iteration(self, 0.001))))
 
     def modify_state(self, indices, step):
@@ -166,6 +172,7 @@ def value_iteration(mdp, epsilon=0.001):
             U1[s] = R(s) + gamma * max([sum([p * U[s1] for (p, s1) in T(s, a)])
                                         for a in mdp.actions(s)])
             delta = max(delta, abs(U1[s] - U[s]))
+        #print U1
         if delta < epsilon * (1 - gamma) / gamma:
             return U
 
@@ -229,3 +236,24 @@ def policy_evaluation(pi, U, mdp, k=100):
             U[s] = R(s) + gamma * sum([p * U[s1] for (p, s1) in T(s, pi[s])])
             #print "U[s]", U[s]
     return U
+
+#how to generate a demo from a start location
+###TODO  this is for deterministic settings!!
+def generate_demonstration(start, policy, mdp):
+    """given a start location return the demonstration following policy
+    return a state action pair array"""
+    
+    demonstration = []
+    curr_state = start
+    #print('start',curr_state)
+    
+    while curr_state not in mdp.terminals:
+        #print('action',policy[curr_state])
+        demonstration.append((curr_state, policy[curr_state]))
+        curr_state = mdp.go(curr_state, policy[curr_state])
+        #print('next state', curr_state)
+    #append the terminal state
+    demonstration.append((curr_state, None))
+    return demonstration
+
+
