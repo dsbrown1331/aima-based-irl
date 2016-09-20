@@ -1,21 +1,22 @@
+#experiment for burn rate and chain length for different demos
+
 import mdp
 from my_birl import *
 from bootstrap_confidence import *
 
 def main():
     print "experiment on simple 2x3 grid world"
-    chain_length = 5000
-    chain_burn = 1000
+    chain_length = 4000
+    chain_burn = 2000
     terminals =[(0,1)] 
-    init_state = (2,1)
     expert_mdp = mdp.GridMDP([[+10, -5, -5],
                           [-1, -1, -1]],
-                      terminals, init = {(1.0,init_state)}, gamma=.95)
+                      terminals, init = {(1.0,(2,0))}, gamma=.95)
     #get mean and MAP from chain
     #not sure how expert demos should be given, I think we want a start and end state
     expert_policy, true_U = mdp.policy_iteration(expert_mdp)
     expert_demo = []
-    expert_demo.append(mdp.generate_demonstration(init_state, expert_policy, expert_mdp))
+    expert_demo.append(mdp.generate_demonstration((2,1), expert_policy, expert_mdp))
     #expert_demo.append(mdp.generate_demonstration((1,1), expert_policy, expert_mdp))
     #expert_demo.append(mdp.generate_demonstration((2,0), expert_policy, expert_mdp))
     #expert_demo.append(mdp.generate_demonstration((1,0), expert_policy, expert_mdp))
@@ -37,16 +38,3 @@ def main():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    main()

@@ -10,7 +10,7 @@ from math import exp
 
 
 class BIRL():
-    def __init__(self, expert_trace, grid_size, terminals, init, step_size=1.0, r_min=-10.0,
+    def __init__(self, expert_trace, grid_size, terminals, init, step_size=1.0, r_min=-5.0,
                  r_max=10.0, prior = 'uniform', birl_iteration = 2000):
         self.n_rows, self.n_columns = grid_size
         self.r_min, self.r_max = r_min, r_max
@@ -39,7 +39,7 @@ class BIRL():
         for i in range(self.birl_iteration):
             #print "===== iter", i, "======" 
             new_mdp = deepcopy(mdp)
-            new_mdp.modify_rewards_randomly(self.step_size) #pick random reward along grid
+            new_mdp.modify_rewards_randomly(step = self.step_size) #pick random reward along grid
             #print 'new rewards'
             #new_mdp.print_rewards()
             #TODO this isn't exactly like the paper...

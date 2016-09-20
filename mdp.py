@@ -23,7 +23,7 @@ class MDP:
 
     def __init__(self, init, actlist, terminals, gamma=.95):
         update(self, init=init, actlist=actlist, terminals=terminals,
-               gamma=gamma, states=set(), reward={}, r_max = 10, r_min = -10)
+               gamma=gamma, states=set(), reward={})
 
     def R(self, state):
         "Return a numeric reward for this state."
@@ -52,10 +52,12 @@ class GridMDP(MDP):
     An action is an (x, y) unit vector; e.g. (1, 0) means move east."""
 
 
-    def __init__(self, grid, terminals, init=(0, 0), gamma=.95):
+    def __init__(self, grid, terminals, init=(0, 0), gamma=.95, r_min = -10.0, r_max = 10.0):
         grid.reverse()  ## because we want row 0 on bottom, not on top
         MDP.__init__(self, init, actlist=orientations,
                      terminals=terminals, gamma=gamma)
+        self.r_min = r_min
+        self.r_max = r_max
         update(self, grid=grid, rows=len(grid), cols=len(grid[0]))
         for x in range(self.cols):
             for y in range(self.rows):
@@ -144,12 +146,6 @@ class GridMDP(MDP):
         return self.to_grid(dict([(s, chars[a]) for (s, a) in policy.items()]))
 
     def print_arrows(self):
-        print "self"
-        print self
-        print "value"
-        print value_iteration(self, 0.001)
-        print "best policy"
-        print best_policy(self, value_iteration(self, 0.001))
         print_table(self.to_arrows(best_policy(self, value_iteration(self, 0.001))))
 
     def modify_state(self, indices, step):
@@ -239,6 +235,7 @@ def policy_evaluation(pi, U, mdp, k=100):
 
 #how to generate a demo from a start location
 ###TODO  this is for deterministic settings!!
+###TODO add a terminationg criterion like value and policy iteration!
 def generate_demonstration(start, policy, mdp):
     """given a start location return the demonstration following policy
     return a state action pair array"""
