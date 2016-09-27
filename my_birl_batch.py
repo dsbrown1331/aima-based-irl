@@ -11,7 +11,7 @@ from my_birl import BIRL
 
 #takes 
 class BIRL_BATCH(BIRL):
-    def __init__(self, expert_trace, grid_size, terminals, init, step_size=1.0, r_min=-5.0,
+    def __init__(self, expert_trace, grid_size, terminals, init, step_size=1.0, r_min=-10.0,
                  r_max=10.0, prior = 'uniform', birl_iteration = 2000):
         self.n_rows, self.n_columns = grid_size
         self.r_min, self.r_max = r_min, r_max
@@ -83,7 +83,9 @@ class BIRL_BATCH(BIRL):
                     #print 'new rewards'
                     #new_mdp.print_rewards()
                     mdp, posterior = deepcopy(new_mdp), new_posterior
-            
+            #print "iter", i
+            #mdp.print_rewards()
+            #print
             Rchain.append(mdp.reward)
         return Rchain, bestMDP
         

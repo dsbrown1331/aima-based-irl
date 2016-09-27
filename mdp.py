@@ -155,7 +155,12 @@ class GridMDP(MDP):
         if self.r_min < self.reward[x_to_change, y_to_change] + direction * step < self.r_max:
             self.reward[x_to_change, y_to_change] += direction * step
 
-#______________________________________________________________________________
+#_________
+
+
+
+
+_____________________________________________________________________
 
 def value_iteration(mdp, epsilon=0.001):
     "Solving an MDP by value iteration. [Fig. 17.4]"

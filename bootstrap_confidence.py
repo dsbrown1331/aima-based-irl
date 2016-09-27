@@ -1,43 +1,76 @@
 from mdp import *
 from my_birl import *
 from my_birl_batch import *
+from random import randint
 
 def compute_value_ratios(expert_mdp, demos, chain_length, chain_burn):
     #get mean and MAP from chain
     birl_batch = BIRL_BATCH(demos, expert_mdp.get_grid_size(), expert_mdp.terminals, expert_mdp.init,
-        step_size=0.5, birl_iteration = chain_length)
+        step_size=1.0, birl_iteration = chain_length)
     chain, map_mdp = birl_batch.run_birl()
     mean_reward = average_chain(chain, chain_burn)
     mean_mdp = deepcopy(map_mdp)
     mean_mdp.reward = mean_reward
-    
-    print "map estimate"
-    map_mdp.print_rewards()
-    print "map policy:"
-    map_mdp.print_arrows()
-    print "expected return"
-    print expected_return(map_mdp)
-    
-    print "---------------"
-    print "mean estimate2"
-    mean_mdp.print_rewards()
-    print "mean policy2:"
-    print policy_iteration(mean_mdp)
-    mean_mdp.print_arrows()
-    print "mean expected return2"
-    print expected_return(mean_mdp)
-    print "mean evaluated return2"
-    print evaluate_expected_return(best_policy(mean_mdp, value_iteration(mean_mdp, 0.001)), expert_mdp)
-    
-    print "------------"
-    print "V^demo(R*)", evaluate_expected_return_demos(demos, expert_mdp)
-    print "(Vdemo - Vpi_mean)/Vdemo", policy_value_ratio(mean_reward, expert_mdp.reward, demos, expert_mdp)
-    print "(Vdemo - Vpi_map)/Vdemo", policy_value_ratio(map_mdp.reward, expert_mdp.reward, demos, expert_mdp)
+    #print "00000"
+    #mean_mdp.print_rewards()
+    #print "00000"
+    num_replicates = 2
+    num_bootstrap = 3
+    mean_true_return_ratio =  policy_value_demo_ratio(mean_reward, expert_mdp.reward, demos, expert_mdp)
+    map_true_return_ratio = policy_value_demo_ratio(map_mdp.reward, expert_mdp.reward, demos, expert_mdp)   
+    print "true"
+    print mean_true_return_ratio
+    print map_true_return_ratio
+    for rep in range(num_replicates):
+        print rep
+        map_return_ratio = []
+        mean_return_ratio = []
+        for b in range(num_bootstrap):
+            print b
+            #pick a random Reward R with replacement from chain
+            R_boot = chain[randint(chain_burn, chain_length)]
+            eval_mdp = deepcopy(expert_mdp)
+            eval_mdp.reward = R_boot
+            eval_mdp.print_rewards()
+            eval_mdp.print_arrows()
+            print "map policy:"
+            map_mdp.print_arrows()
+            #calculate policy value ratio
+            print "mean policy:"
+            mean_mdp.print_arrows()
+            mean_return_ratio.append(policy_value_demo_ratio(mean_reward, R_boot, demos, expert_mdp))
+            map_return_ratio.append(policy_value_demo_ratio(map_mdp.reward, R_boot, demos, expert_mdp))
+        print mean_return_ratio
+        print map_return_ratio
+            
+       
+#     print "map estimate"
+#     map_mdp.print_rewards()
+#     print "map policy:"
+#     map_mdp.print_arrows()
+#     print "expected return"
+#     print expected_return(map_mdp)
+#     
+#     print "---------------"
+#     print "mean estimate2"
+#     mean_mdp.print_rewards()
+#     print "mean policy2:"
+#     print policy_iteration(mean_mdp)
+#     mean_mdp.print_arrows()
+#     print "mean expected return2"
+#     print expected_return(mean_mdp)
+#     print "mean evaluated return2"
+#     print evaluate_expected_return(best_policy(mean_mdp, value_iteration(mean_mdp, 0.001)), expert_mdp)
+#     
+#     print "------------"
+#     print "V^demo(R*)", evaluate_expected_return_demos(demos, expert_mdp)
+#     print "(Vdemo - Vpi_mean)/Vdemo", policy_value_ratio(mean_reward, expert_mdp.reward, demos, expert_mdp)
+#     print "(Vdemo - Vpi_map)/Vdemo", policy_value_ratio(map_mdp.reward, expert_mdp.reward, demos, expert_mdp)
     
     
 #takes an estimated reward, demos, an MDP\R and evaluates the ratio of values if reward_eval is true reward
 ##TODO note this assumes the same start state for mdp\r and for demos!!
-def policy_value_ratio(reward_est, reward_eval, demos, mdp_r):
+def policy_value_demo_ratio(reward_est, reward_eval, demos, mdp_r):
     #print "reward_est", reward_est
     #print "reward_eval", reward_eval
     #first get optimal policy if reward_est is true

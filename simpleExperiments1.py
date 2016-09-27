@@ -6,11 +6,14 @@ def main():
     print "experiment on simple 2x3 grid world"
     chain_length = 3000
     chain_burn = 1000
-    terminals =[(0,1)] 
-    init_dist = [(1.0,(2,0))]
-    true_reward = [[+10, -5, -5],
-                   [-1, -1, -1]]
+    terminals =[(0,2)] 
+    init_dist = [(0.5,(2,0)), (0.5,(1,2))]
+    #true_reward = [[+10, -5, -5],
+    #               [-1, -1, -1]]
     
+    true_reward = [[+10, -10, 0],
+                   [  0, -10, 0],
+                   [  0,   0, 0]]
     
     expert_mdp = mdp.GridMDP(true_reward,
                       terminals, init_dist, gamma=.95)
@@ -22,7 +25,7 @@ def main():
     expert_demo = []
     print "generating demo"
     expert_demo.append(mdp.generate_demonstration((2,0), expert_policy, expert_mdp))
-    #expert_demo.append(mdp.generate_demonstration((1,1), expert_policy, expert_mdp))
+    expert_demo.append(mdp.generate_demonstration((1,2), expert_policy, expert_mdp))
     #expert_demo.append(mdp.generate_demonstration((2,0), expert_policy, expert_mdp))
     #expert_demo.append(mdp.generate_demonstration((1,0), expert_policy, expert_mdp))
     #expert_demo.append(mdp.generate_demonstration((0,0), expert_policy, expert_mdp))
