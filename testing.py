@@ -1,7 +1,7 @@
 #test script to understand birl implementation better
 import mdp
 from my_birl import *
-
+init = [(2,0)]
 def main():
     expert_mdp = mdp.GridMDP([[+10, -5, -5],
                           [-1, -1, -1]],
@@ -22,14 +22,13 @@ def main():
     print_table(expert_mdp.to_arrows(expert_trace))
     print "---------------"
 
-    birl = BIRL(expert_trace, expert_mdp.get_grid_size(), expert_mdp.terminals, 
-        step_size=0.5, birl_iteration = 4000)
+    birl = BIRL(expert_trace, expert_mdp.get_grid_size(), expert_mdp.terminals, init)
     chain, bestMDP =  birl.run_birl()
     print len(chain)
     print average_chain(chain, 1000)
-    print bestMDP.reward
+    bestMDP.print_rewards()
     #TODO fix print table
-    #print print_table(bestMDP.to_arrows(policy_iteration(bestMDP)))
+    bestMDP.print_arrows()
     #TODO figure out how to print out rewards (see guys github stuff)
     #TODO plot how often it finds a better reward, not often
     #TODO plot how often it switches, also not often, NOTE switching is good since it gives coverage and support to equally good options that span the space of possible rewards
