@@ -2,11 +2,6 @@ import numpy as np
 import mdp
 from my_birl_batch import *
 from my_birl import *
-from halfspace_uncertainty import *
-from mdp_feature_counts import *
-from optimal_teaching import *
-from activeLearning import chain_variance
-import operator
 
 
 #generate a random n by n world
