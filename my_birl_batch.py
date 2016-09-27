@@ -31,12 +31,15 @@ class BIRL_BATCH(BIRL):
         Rchain = [] #store rewards along the way, #TODO dictionaries are probably not best...
         #TODO make this a random reward vector
         mdp = self.create_zero_rewards() #pick a starting reward vector
-        Rchain.append(mdp.reward)
+        #Rchain.append(mdp.reward) #I don't think i want the initital random reward
         
         #print 'old rewards'
         #mdp.print_rewards()
         pi, u = policy_iteration(mdp) #calculate optimal policy and utility for random R
         q = get_q_values(mdp, u) #get the q-values for R in mdp
+        #print "qqqqqqq"
+        #print q
+        #print "qqqqqq"
         posterior = calculate_posterior(mdp, q, self.expert_trace, self.prior)
         bestPosterior = posterior 
         bestMDP = mdp
@@ -60,16 +63,21 @@ class BIRL_BATCH(BIRL):
                 new_posterior = calculate_posterior(new_mdp, new_q, self.expert_trace, self.prior)
                 #print 'prob switch', exp(new_posterior - posterior)
                 if probability(min(1, exp(new_posterior - posterior))):
-                    #TODO figure out why it doesn't switch very often 
+                    #I figure out why it doesn't switch very often, there was a bug in policy evaluation
                     #TODO I could do much better I think using simulated annealing or randomized hill climbing...just systemtatically try neighboring rewards and climb with some noise...isn't that what mcmc does, though, I don't know if it's all that efficient...maybe a better prior is needed
+                    #TODO why does switching happen that results in worse policy is it just the weighting by Qvals?
                     #print "===== iter", i, "======" 
                     #print 'switched better'
                     #print 'new rewards'
                     #new_mdp.print_rewards()
+                    #new_mdp.print_arrows()
                     #try saving the best so far
                     if bestPosterior < new_posterior:
                         bestPosterior = new_posterior
                         bestMDP = new_mdp
+                        #print "best", i
+                        #bestMDP.print_rewards()
+                        #bestMDP.print_arrows()
                     
                     pi, u, mdp, posterior = new_pi, new_u, deepcopy(new_mdp), new_posterior
 
@@ -82,10 +90,13 @@ class BIRL_BATCH(BIRL):
                     #print 'switched random'
                     #print 'new rewards'
                     #new_mdp.print_rewards()
+                    #new_mdp.print_arrows()
                     mdp, posterior = deepcopy(new_mdp), new_posterior
+
             #print "iter", i
             #mdp.print_rewards()
-            #print
+            #print "---"
+
             Rchain.append(mdp.reward)
         return Rchain, bestMDP
         
@@ -107,11 +118,14 @@ def calculate_posterior(mdp, q, expert_demos, prior, alpha=0.95,):
     e = 0
     
     for s_e, a_e in expert_demos:
+        #print s_e, a_e
         for a in mdp.actions(s_e):
+            #print q[s_e, a]
             z.append(alpha * q[s_e, a]) #normalizing constant in denominator
-
-        e += alpha * q[s_e, a_e] - logsumexp(z) #log(e^Q / sum e^Q)
-
+        #print q[s_e,a_e]
+        e += alpha * q[s_e, a_e] - logsumexp(z) #log(e^(alpha * Q) / sum e^Q)
+        #print e
+        
         del z[:]  #Removes contents of Z
     #TODO get a better prior and maybe use state info, not just raw values??
     if prior is 'uniform':

@@ -155,12 +155,46 @@ class GridMDP(MDP):
         if self.r_min < self.reward[x_to_change, y_to_change] + direction * step < self.r_max:
             self.reward[x_to_change, y_to_change] += direction * step
 
-#_________
 
 
+#___________________________________________________________________
+class DeterministicGridMDP(GridMDP):
+    """A two-d grid MDP with deterministic transition dynamics"""
+    
+    def T(self, state, action):
+        if action is None:
+            return [(0.0, state)]
+        else:
+            return [(1.0, self.go(state,action))]
 
 
-_____________________________________________________________________
+#___________________________________________________________________
+class DeterministicWeightGridMDP(DeterministicGridMDP):
+    """ A two-d grid MDP with weights determining rewards
+    weights are a dictionary mapping features to rewards
+    grid is a 2d array of features that match weight dict
+    """
+    def __init__(self, features, weights, grid, terminals, init=[(0, 0)], gamma=.9):
+        grid.reverse()  # because we want row 0 on bottom, not on top
+        MDP.__init__(self, init, actlist=orientations,
+                     terminals=terminals, gamma=gamma)
+        self.grid = grid
+        self.rows = len(grid)
+        self.cols = len(grid[0])
+        self.features = features
+        for x in range(self.cols):
+            for y in range(self.rows):
+                self.reward[x, y] = weights[grid[y][x]]
+                if grid[y][x] is not None:
+                    self.states.add((x, y))
+
+    def observe_features(self, state):
+        x,y = state
+        return self.grid[y][x]
+
+
+#______________________________________________________________________________
+
 
 def value_iteration(mdp, epsilon=0.001):
     "Solving an MDP by value iteration. [Fig. 17.4]"
